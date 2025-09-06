@@ -53,8 +53,5 @@ clone/
 3. Select a class/batch in the Timetable Optimizer and generate timetables.
 4. View, approve, publish, and export timetables in the Timetable Viewer.
 
-## Static Clone
-A static HTML/CSS/JS clone is available in the `clone` folder for UI preview purposes. It does not include full app logic or data handling.
-
 ## Author
-Created by MGX. For questions or support, contact the project maintainer.
+Created by Prince R. For questions or support, contact prince55833kumar@gmail.com.
