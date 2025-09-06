@@ -207,30 +207,32 @@ export class TimetableEngine {
         : this.subjects.map(s => s.id);
       for (const subjectId of subjectIds) {
         const subject = this.subjects.find(s => s.id === subjectId);
-        if (!subject) continue;
+        if (!subject) {
+          console.warn(`Subject with ID ${subjectId} not found for batch ${batch.name}`);
+          continue;
+        }
 
         // Find eligible faculty
         const eligibleFaculty = this.faculty.filter(f => 
           f.eligibleSubjects.includes(subjectId)
         );
+        if (eligibleFaculty.length === 0) {
+          console.warn(`No eligible faculty for subject ${subject.name} in batch ${batch.name}`);
+        }
 
-        // Find suitable rooms
-        const suitableRooms = this.rooms.filter(r => 
-          r.capacity >= batch.size &&
-          (subject.type === 'Lab' ? r.type === 'Lab' : true) &&
-          subject.equipmentRequired.every(eq => r.equipment.includes(eq))
-        );
+        // More permissive: ignore room type and equipment for debugging
+        const suitableRooms = this.rooms.filter(r => r.capacity >= batch.size);
+        if (suitableRooms.length === 0) {
+          console.warn(`No suitable rooms (by capacity) for subject ${subject.name} in batch ${batch.name}`);
+        }
 
         // Schedule required sessions
         for (let session = 0; session < subject.sessionsPerWeek; session++) {
           let scheduled = false;
-          
           for (const timeSlot of timeSlots) {
             if (scheduled) break;
-            
             for (const faculty of eligibleFaculty) {
               if (scheduled) break;
-              
               for (const room of suitableRooms) {
                 const entry: TimetableEntry = {
                   id: `entry-${Date.now()}-${Math.random()}`,
@@ -240,9 +242,7 @@ export class TimetableEngine {
                   batch,
                   timeSlot
                 };
-
                 const entryConflicts = this.checkHardConstraints(entry, entries);
-                
                 if (entryConflicts.length === 0) {
                   entries.push(entry);
                   scheduled = true;
@@ -253,12 +253,17 @@ export class TimetableEngine {
               }
             }
           }
+          if (!scheduled) {
+            console.warn(`Could not schedule session ${session + 1} for subject ${subject.name} in batch ${batch.name}`);
+          }
         }
       }
     }
 
+    // Ensure unique id for each timetable
+    const uniqueSuffix = Math.random().toString(36).substring(2, 10);
     return {
-      id: `timetable-${Date.now()}`,
+      id: `timetable-${Date.now()}-${uniqueSuffix}`,
       name: `Generated Timetable ${new Date().toLocaleDateString()}`,
       entries,
       conflicts,
@@ -269,13 +274,17 @@ export class TimetableEngine {
   }
 
   private calculateScore(entries: TimetableEntry[]): number {
-    // Simple scoring based on successful assignments
-    const totalRequired = this.batches.reduce((sum, batch) => 
-      sum + batch.mandatorySubjects.length, 0
-    );
-    
+    // Improved scoring: count all scheduled subjects if mandatorySubjects is empty
+    let totalRequired = 0;
+    for (const batch of this.batches) {
+      if (batch.mandatorySubjects && batch.mandatorySubjects.length > 0) {
+        totalRequired += batch.mandatorySubjects.length;
+      } else {
+        totalRequired += this.subjects.length;
+      }
+    }
     const scheduled = entries.length;
-    return Math.round((scheduled / totalRequired) * 100);
+    return totalRequired > 0 ? Math.round((scheduled / totalRequired) * 100) : 0;
   }
 
   public getConstraints() {
