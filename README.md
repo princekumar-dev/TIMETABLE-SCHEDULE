@@ -29,7 +29,10 @@ workspace/
     public/              # Static assets
     index.html           # Main HTML entry point
     package.json         # Project dependencies and scripts
-
+clone/
+  index.html             # Static HTML clone
+  style.css              # Static CSS
+  main.js                # Static JS
 ```
 
 ## How to Run
@@ -50,5 +53,8 @@ workspace/
 3. Select a class/batch in the Timetable Optimizer and generate timetables.
 4. View, approve, publish, and export timetables in the Timetable Viewer.
 
+## Static Clone
+A static HTML/CSS/JS clone is available in the `clone` folder for UI preview purposes. It does not include full app logic or data handling.
+
 ## Author
-Created by Prince (MGX). 
+Created by MGX. For questions or support, contact the project maintainer.
