@@ -57,4 +57,4 @@ clone/
 A static HTML/CSS/JS clone is available in the `clone` folder for UI preview purposes. It does not include full app logic or data handling.
 
 ## Author
-Created by MGX. For questions or support, contact the project maintainer.
+Created by Cookie by ❤️
